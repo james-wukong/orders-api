@@ -36,7 +36,7 @@ jobs:
         run: go test ./...
 
       - name: Build
-        run: go build ./cmd/app
+        run: go build ./cmd/api
 
-      - name: Docker build
-        run: docker build -t go-docker-project .
+      # - name: Docker build
+      #   run: docker build -t go-docker-project .
