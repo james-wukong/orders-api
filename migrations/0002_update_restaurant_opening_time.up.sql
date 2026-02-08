@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE restaurants
+ALTER COLUMN opening_time SET DEFAULT '10:00';
+
+ALTER TABLE restaurants
+ALTER COLUMN closing_time SET DEFAULT '22:00';
+
+COMMIT;

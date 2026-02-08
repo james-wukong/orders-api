@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE restaurants
+ALTER COLUMN opening_time DROP DEFAULT;
+
+ALTER TABLE restaurants
+ALTER COLUMN closing_time DROP DEFAULT;
+
+COMMIT;
