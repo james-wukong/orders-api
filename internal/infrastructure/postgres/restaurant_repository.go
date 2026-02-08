@@ -1,3 +1,4 @@
+// Package postgres implements the restaurant repository using GORM for PostgreSQL
 package postgres
 
 import (

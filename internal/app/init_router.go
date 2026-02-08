@@ -1,3 +1,5 @@
+// Package app initializes the application routers and dependencies
+// for the every module.
 package app
 
 import (

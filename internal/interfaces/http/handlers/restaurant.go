@@ -40,23 +40,11 @@ func (h *RestaurantHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Map DTO to UseCase Input
-	input := restaurant.CreateRestaurantInput{
-		Name:        req.Name,
-		Slug:        req.Slug,
-		Description: req.Description,
-		Phone:       req.Phone,
-		Email:       req.Email,
-		Address:     req.Address,
-		City:        req.City,
-		State:       req.State,
-	}
-
-	res, err := h.createRestaurantUC.Execute(c.Request.Context(), input)
+	res, err := h.createRestaurantUC.Execute(c.Request.Context(), req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusCreated, res)
+	// Map domain entity to response DTO
+	c.JSON(http.StatusCreated, dto.MapToRestaurantResponse(res))
 }

@@ -4,24 +4,11 @@ package restaurant
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/james-wukong/orders-api/internal/domain/restaurant"
+	"github.com/james-wukong/orders-api/internal/interfaces/http/dto"
 )
-
-// CreateRestaurantInput defines the data needed to create a restaurant
-// This is often mapped from the DTO in the handler
-type CreateRestaurantInput struct {
-	Name        string
-	Slug        string
-	Description string
-	Phone       string
-	Email       string
-	Address     string
-	City        string
-	State       string
-}
 
 type CreateRestaurantUseCase struct {
 	repo restaurant.Repository
@@ -33,29 +20,54 @@ func NewCreateRestaurantUseCase(repo restaurant.Repository) *CreateRestaurantUse
 	}
 }
 
-func (uc *CreateRestaurantUseCase) Execute(ctx context.Context, input CreateRestaurantInput) (*restaurant.Restaurant, error) {
-	// 1. Business Rule: Check if a restaurant with the same slug already exists
+func (uc *CreateRestaurantUseCase) Execute(ctx context.Context, input dto.CreateRestaurantRequest) (*restaurant.Restaurant, error) {
+	// 1. Validate if slug is unique
 	existing, err := uc.repo.GetBySlug(ctx, input.Slug)
 	if err != nil {
-		return nil, fmt.Errorf("error checking existing restaurant: %w", err)
+		return nil, err
 	}
 	if existing != nil {
-		return nil, errors.New("a restaurant with this slug already exists")
+		return nil, fmt.Errorf("restaurant with slug %s already exists", input.Slug)
 	}
 
-	// 2. Map input to Domain Entity
-	// We use the NewRestaurant factory to ensure default values (like UUID) are set
+	// 2. Initialize Entity using the Factory
 	res := restaurant.NewRestaurant(input.Name, input.Slug)
+
+	// 3. Map Basic Fields
 	res.Description = input.Description
 	res.Phone = input.Phone
 	res.Email = input.Email
 	res.Address = input.Address
 	res.City = input.City
 	res.State = input.State
+	res.PostalCode = input.PostalCode
+	res.Country = input.Country
+	res.Latitude = input.Latitude
+	res.Longitude = input.Longitude
+	res.LogoURL = input.LogoURL
+	res.BannerURL = input.BannerURL
 
-	// 3. Persist the entity using the repository
+	// 4. Map Optional Fields with Pointer Logic
+	// This prevents the "" error by only assigning if a value was actually provided
+	if input.OpeningTime != nil && *input.OpeningTime != "" {
+		res.OpeningTime = *input.OpeningTime
+	}
+	if input.ClosingTime != nil && *input.ClosingTime != "" {
+		res.ClosingTime = *input.ClosingTime
+	}
+	if input.DeliveryFee != nil {
+		res.DeliveryFee = *input.DeliveryFee
+	}
+	if input.MinimumOrder != nil {
+		res.MinimumOrder = *input.MinimumOrder
+	}
+	if input.EstimatedDeliveryTime != nil {
+		res.EstimatedDeliveryTime = *input.EstimatedDeliveryTime
+	}
+
+	// 5. Save to Repository
 	if err := uc.repo.Create(ctx, res); err != nil {
-		return nil, fmt.Errorf("could not create restaurant: %w", err)
+		return nil, fmt.Errorf("failed to save restaurant: %w", err)
 	}
 
 	return res, nil
