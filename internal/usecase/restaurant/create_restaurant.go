@@ -20,7 +20,10 @@ func NewCreateRestaurantUseCase(repo restaurant.Repository) *CreateRestaurantUse
 	}
 }
 
-func (uc *CreateRestaurantUseCase) Execute(ctx context.Context, input dto.CreateRestaurantRequest) (*restaurant.Restaurant, error) {
+func (uc *CreateRestaurantUseCase) Execute(
+	ctx context.Context,
+	input dto.CreateRestaurantRequest,
+) (*restaurant.RestaurantEntity, error) {
 	// 1. Validate if slug is unique
 	existing, err := uc.repo.GetBySlug(ctx, input.Slug)
 	if err != nil {
@@ -31,7 +34,7 @@ func (uc *CreateRestaurantUseCase) Execute(ctx context.Context, input dto.Create
 	}
 
 	// 2. Initialize Entity using the Factory
-	res := restaurant.NewRestaurant(input.Name, input.Slug)
+	res := restaurant.NewRestaurantEntity(input.Name, input.Slug)
 
 	// 3. Map Basic Fields
 	res.Description = input.Description

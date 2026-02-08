@@ -3,7 +3,7 @@
 package app
 
 import (
-	infraPostgres "github.com/james-wukong/orders-api/internal/infrastructure/postgres"
+	infraPostgres "github.com/james-wukong/orders-api/internal/infrastructure/postgres/persistence"
 	"github.com/james-wukong/orders-api/internal/interfaces/http/handlers"
 	restaurantUC "github.com/james-wukong/orders-api/internal/usecase/restaurant"
 	"gorm.io/gorm"

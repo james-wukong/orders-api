@@ -1,4 +1,5 @@
 // Package postgres implements the restaurant repository using GORM for PostgreSQL
+// It implements the restaurant.Repository interface defined in the restaurant domain, providing methods for creating, retrieving, updating, and deleting restaurant records in a PostgreSQL database using GORM as the ORM.
 package postgres
 
 import (
@@ -20,12 +21,12 @@ func NewRestaurantRepository(db *gorm.DB) restaurant.Repository {
 	return &restaurantRepository{db: db}
 }
 
-func (r *restaurantRepository) Create(ctx context.Context, res *restaurant.Restaurant) error {
+func (r *restaurantRepository) Create(ctx context.Context, res *restaurant.RestaurantEntity) error {
 	return r.db.WithContext(ctx).Create(res).Error
 }
 
-func (r *restaurantRepository) GetByID(ctx context.Context, id uuid.UUID) (*restaurant.Restaurant, error) {
-	var res restaurant.Restaurant
+func (r *restaurantRepository) GetByID(ctx context.Context, id uuid.UUID) (*restaurant.RestaurantEntity, error) {
+	var res restaurant.RestaurantEntity
 	err := r.db.WithContext(ctx).First(&res, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -36,8 +37,8 @@ func (r *restaurantRepository) GetByID(ctx context.Context, id uuid.UUID) (*rest
 	return &res, nil
 }
 
-func (r *restaurantRepository) GetBySlug(ctx context.Context, slug string) (*restaurant.Restaurant, error) {
-	var res restaurant.Restaurant
+func (r *restaurantRepository) GetBySlug(ctx context.Context, slug string) (*restaurant.RestaurantEntity, error) {
+	var res restaurant.RestaurantEntity
 	err := r.db.WithContext(ctx).Where("slug = ?", slug).First(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -48,18 +49,18 @@ func (r *restaurantRepository) GetBySlug(ctx context.Context, slug string) (*res
 	return &res, nil
 }
 
-func (r *restaurantRepository) List(ctx context.Context, limit, offset int) ([]*restaurant.Restaurant, error) {
-	var restaurants []*restaurant.Restaurant
+func (r *restaurantRepository) List(ctx context.Context, limit, offset int) ([]*restaurant.RestaurantEntity, error) {
+	var restaurants []*restaurant.RestaurantEntity
 	err := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&restaurants).Error
 	return restaurants, err
 }
 
-func (r *restaurantRepository) Update(ctx context.Context, res *restaurant.Restaurant) error {
+func (r *restaurantRepository) Update(ctx context.Context, res *restaurant.RestaurantEntity) error {
 	// Updates current record, only updating non-zero fields
 	// If you want to update all fields (including zeros), use .Save(res)
 	return r.db.WithContext(ctx).Save(res).Error
 }
 
 func (r *restaurantRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&restaurant.Restaurant{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Delete(&restaurant.RestaurantEntity{}, "id = ?", id).Error
 }
