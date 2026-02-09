@@ -52,7 +52,7 @@ type RestaurantResponse struct {
 	CreatedAt    string  `json:"created_at"`
 }
 
-func MapToRestaurantResponse(entity *restaurant.RestaurantEntity) RestaurantResponse {
+func MapToRestaurantResponse(entity *restaurant.Restaurants) RestaurantResponse {
 	return RestaurantResponse{
 		ID:           entity.ID.String(),
 		Name:         entity.Name,

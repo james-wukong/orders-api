@@ -56,18 +56,19 @@ func Bootstrap(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	// 1. Setup Gin
+	// 1. Setup Gin and middleware
 	r := gin.Default()
+	mw := middleware.NewManager(&conLog, db, redisClient)
 	if cfg.App.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r.Use(
-		middleware.RateLimiterMiddleware(),
-		middleware.CORSMiddleware(),
-		middleware.RecoveryMiddleware(),
-		middleware.SetClientMiddleware(),
+		mw.RateLimiterMiddleware(),
+		mw.CORSMiddleware(),
+		mw.RecoveryMiddleware(),
+		// mw.SetClientMiddleware(),
 	)
 	v1 := r.Group("/api/v1")
 
@@ -88,13 +89,13 @@ func Bootstrap(ctx context.Context) (*App, error) {
 
 	// 2. Init Handlers
 	rHandler := application.initRestaurantRouter(db)
+	uHandler := application.initUserRouter(db)
 
 	// 3. Register everything dynamically
 	routerManager := router.NewRouter(r)
 	routerManager.RegisterModules(v1,
-		// uHandler,
-		// oHandler,
 		rHandler,
+		uHandler,
 	// Adding a new module (e.g. PaymentHandler) is now just one line here!
 	)
 

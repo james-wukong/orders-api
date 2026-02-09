@@ -5,6 +5,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	// DefaultBcryptCost is kept here because it's specific to this implementation
+	DefaultBcryptCost = 12
+)
+
 type bcryptHasher struct {
 	cost int
 }

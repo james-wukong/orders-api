@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetClientMiddleware() gin.HandlerFunc {
+func (m *Manager) SetClientMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get the User-Agent string from the request header
 		userAgentString := c.Request.Header.Get("User-Agent")

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CORSMiddleware() gin.HandlerFunc {
+func (m *Manager) CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
@@ -18,9 +18,10 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		if c.Request.Method == "OPTIONS" {
 			// log.Info().Msgf("OPTIONS method is allowed: %v \n", c.Request.Method)
-			c.AbortWithStatus(http.StatusOK)
-		} else {
-			c.Next()
+			m.log.Info().Str("ip", c.ClientIP()).Msg("OPTIONS method is allowed")
+			c.AbortWithStatus(http.StatusNoContent)
+			return
 		}
+		c.Next()
 	}
 }

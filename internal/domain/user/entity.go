@@ -18,7 +18,7 @@ const (
 	RoleInventoryManager Role = "inventory_manager"
 )
 
-type UserEntity struct {
+type Users struct {
 	ID                     uuid.UUID  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Email                  string     `gorm:"size:255;unique;not null"`
 	PasswordHash           string     `gorm:"size:255;not null"`
@@ -46,9 +46,9 @@ type UserFilterEntity struct {
 	Limit     int
 }
 
-// NewUserEntity is a factory function to initialize a new user entity with defaults
-func NewUserEntity(email, passwordHash string) *UserEntity {
-	return &UserEntity{
+// NewUsers is a factory function to initialize a new user entity with defaults
+func NewUsers(email, passwordHash string) *Users {
+	return &Users{
 		ID:            uuid.New(),
 		Email:         email,
 		PasswordHash:  passwordHash,

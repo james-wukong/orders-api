@@ -10,12 +10,12 @@ import (
 
 // CreateUserRequest is used for registration/onboarding
 type CreateUserRequest struct {
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=8"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	Phone     string `json:"phone"`
-	Role      string `json:"role" binding:"oneof=customer admin kitchen delivery inventory_manager"`
+	Email     string  `json:"email" binding:"required,email"`
+	Password  string  `json:"password" binding:"required,min=8"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Phone     *string `json:"phone"`
+	Role      string  `json:"role" binding:"omitempty,oneof=customer admin kitchen delivery inventory_manager"`
 }
 
 // UpdateUserRequest uses pointers to allow partial updates (PATCH)
@@ -41,7 +41,7 @@ type UserResponse struct {
 }
 
 // MapToUserResponse maps domain entity to response DTO
-func MapToUserResponse(user *user.UserEntity) UserResponse {
+func MapToUserResponse(user *user.Users) UserResponse {
 	return UserResponse{
 		ID:            user.ID.String(),
 		Email:         user.Email,
