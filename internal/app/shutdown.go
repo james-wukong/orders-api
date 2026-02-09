@@ -3,14 +3,16 @@ package app
 
 import (
 	"context"
+
+	"github.com/rs/zerolog"
 )
 
-func Shutdown(ctx context.Context, app *App) error {
-	conLog.Info().Msg("Shutting down application...")
+func Shutdown(ctx context.Context, app *App, log *zerolog.Logger) error {
+	log.Info().Msg("Shutting down application...")
 
 	// shutdown HTTP server with context timeout
 	if err := app.HTTPServer.Shutdown(ctx); err != nil {
-		conLog.Error().Err(err).Msg("Error shutting down HTTP server")
+		log.Error().Err(err).Msg("Error shutting down HTTP server")
 		return err
 	}
 	// Close database and Redis connections if they exist
@@ -24,6 +26,6 @@ func Shutdown(ctx context.Context, app *App) error {
 		_ = app.Redis.Close()
 	}
 
-	conLog.Info().Msg("Shutting down complete...")
+	log.Info().Msg("Shutting down complete...")
 	return nil
 }

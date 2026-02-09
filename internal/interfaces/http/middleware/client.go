@@ -3,26 +3,23 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/james-wukong/orders-api/internal/pkg/utils"
 )
 
 func (m *Manager) SetClientMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get the User-Agent string from the request header
-		userAgentString := c.Request.Header.Get("User-Agent")
-		// parser := uaparser.NewFromSaved()
-		// clientIP := c.ClientIP()
+		// Initialize the metadata extractor and get metadata from the request
+		meta := utils.NewMetadataExtractor().GetMetadata(c)
 
-		if userAgentString == "" {
-			// c.Set(constant.CtxDeviceInfo, utils.RedisJWTTokenKey(clientIP, constant.UnknownStr))
-			c.Next()
-			return
+		c.Set("client_ip", meta.IP)
+		c.Set("client_os", meta.OS)
+		c.Set("client_device", meta.Device)
+		c.Set("client_user_agent", meta.UserAgent)
+		for k, v := range meta.Location {
+			c.Set("client_location_"+k, v)
 		}
-		// client := parser.Parse(userAgentString)
-		// clientDevice := client.Device.Family
-
-		// Set device information in context
-		// c.Set(constant.CtxDeviceInfo, utils.RedisJWTTokenKey(clientIP, clientDevice))
-
+		m.log.Info().Msgf("Client Metadata: IP=%s, OS=%s, Device=%s, UserAgent=%s, Location=%v",
+			meta.IP, meta.OS, meta.Device, meta.UserAgent, meta.Location)
 		c.Next()
 	}
 }
