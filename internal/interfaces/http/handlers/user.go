@@ -5,12 +5,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/james-wukong/orders-api/internal/interfaces/http/dto"
+	"github.com/james-wukong/orders-api/internal/interfaces/http/middleware"
 	userUC "github.com/james-wukong/orders-api/internal/usecase/user"
 )
 
 type UserHandler struct {
 	// createUserUC *user.CreateUserUseCase
 	createUserUC *userUC.CreateUserUseCase
+	loginUC      *userUC.LoginUseCase
 }
 
 func NewUserHandler(
@@ -22,14 +24,16 @@ func NewUserHandler(
 }
 
 // Register satisfies the RouterRegister interface
-func (h *UserHandler) Register(v1 *gin.RouterGroup) {
+func (h *UserHandler) Register(mw *middleware.Manager, v1 *gin.RouterGroup) {
 	userGroup := v1.Group("/user")
 	{
+		// userGroup.Use(mw.Authenticate())
 		userGroup.POST("/register", h.Create)
-		// userGroup.GET("/:id", h.GetProfile)
+		// userGroup.GET("/:id", mw.Authenticate(), h.GetProfile)
 	}
 }
 
+// Create handles user registration requests
 func (h *UserHandler) Create(c *gin.Context) {
 	// 1. Map Request DTO to use case input
 	var req dto.CreateUserRequest
@@ -47,4 +51,8 @@ func (h *UserHandler) Create(c *gin.Context) {
 
 	// 3. Map domain entity to response DTO
 	c.JSON(http.StatusCreated, dto.MapToUserResponse(res))
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+
 }

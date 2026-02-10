@@ -23,6 +23,7 @@ type App struct {
 	HTTPServer *http.Server
 	Database   *DBWrapper
 	Redis      *redis.Client
+	Log        *zerolog.Logger
 }
 
 type DBWrapper struct {
@@ -76,14 +77,15 @@ func Bootstrap(ctx context.Context, log *zerolog.Logger) (*App, error) {
 		HTTPServer: server,
 		Database:   &DBWrapper{DB: db},
 		Redis:      redisClient,
+		Log:        log,
 	}
 
 	// 2. Init Handlers
-	rHandler := application.initRestaurantRouter(db)
-	uHandler := application.initUserRouter(db)
+	rHandler := application.initRestaurantRouter()
+	uHandler := application.initUserRouter()
 
 	// 3. Register everything dynamically
-	routerManager := router.NewRouter(r)
+	routerManager := router.NewRouter(r, mw)
 	routerManager.RegisterModules(v1,
 		rHandler,
 		uHandler,

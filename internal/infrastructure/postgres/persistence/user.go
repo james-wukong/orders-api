@@ -1,6 +1,6 @@
-// Package postgres implements the user repository using PostgreSQL as the database.
+// Package persistence implements the user repository using PostgreSQL as the database.
 // It implements the UserRepository interface defined in the user domain, providing methods for creating, retrieving, updating, and deleting user records in a PostgreSQL database using GORM as the ORM.
-package postgres
+package persistence
 
 import (
 	"context"
@@ -8,15 +8,18 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/james-wukong/orders-api/internal/domain/user"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
 type userRepository struct {
-	db *gorm.DB
+	db    *gorm.DB
+	cache user.Cache
+	log   *zerolog.Logger
 }
 
-func NewUserRepository(db *gorm.DB) user.Repository {
-	return &userRepository{db: db}
+func NewUserRepository(db *gorm.DB, cache user.Cache, log *zerolog.Logger) user.Repository {
+	return &userRepository{db: db, cache: cache, log: log}
 }
 
 // Implement the UserRepository interface methods here, using GORM to interact with the PostgreSQL database.

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/james-wukong/orders-api/internal/interfaces/http/dto"
+	"github.com/james-wukong/orders-api/internal/interfaces/http/middleware"
 	"github.com/james-wukong/orders-api/internal/usecase/restaurant"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,7 @@ func NewRestaurantHandler(
 }
 
 // Register satisfies the RouterRegister interface
-func (h *RestaurantHandler) Register(v1 *gin.RouterGroup) {
+func (h *RestaurantHandler) Register(mw *middleware.Manager, v1 *gin.RouterGroup) {
 	resGroup := v1.Group("/restaurant")
 	{
 		resGroup.POST("/create", h.Create)
