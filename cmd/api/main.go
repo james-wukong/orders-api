@@ -32,7 +32,7 @@ func main() {
 
 	// 2. Initialize the App Container (Dependency Injection)
 	// This sets up HTTPServer, DB, Redis, Loggers, routes, and Usecases
-	application, err := app.Bootstrap(ctx)
+	application, err := app.Bootstrap(ctx, &appLog)
 	if err != nil {
 		appLog.Error().Err(err).Msg("Failed to bootstrap application")
 	}
@@ -53,7 +53,7 @@ func main() {
 	appLog.Info().Msg("Shutting down server...")
 
 	// 6. Graceful Shutdown context (5 second timeout)
-	if err := app.Shutdown(ctx, application); err != nil {
+	if err := app.Shutdown(ctx, application, &appLog); err != nil {
 		appLog.Error().Err(err).Msg("Server forced to shutdown")
 	}
 

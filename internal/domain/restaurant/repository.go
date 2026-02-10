@@ -9,10 +9,10 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, restaurant *Restaurant) error
-	GetByID(ctx context.Context, id uuid.UUID) (*Restaurant, error)
-	GetBySlug(ctx context.Context, slug string) (*Restaurant, error)
-	List(ctx context.Context, limit, offset int) ([]*Restaurant, error)
-	Update(ctx context.Context, restaurant *Restaurant) error
+	Create(ctx context.Context, restaurant *Restaurants) error
+	GetByID(ctx context.Context, id uuid.UUID) (*Restaurants, error)
+	GetBySlug(ctx context.Context, slug string) (*Restaurants, error)
+	List(ctx context.Context, limit, offset int) ([]*Restaurants, error)
+	Update(ctx context.Context, restaurant *Restaurants) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
