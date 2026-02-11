@@ -10,12 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/james-wukong/orders-api/internal/config"
-	"github.com/james-wukong/orders-api/internal/infrastructure/logger"
 	infraPostgre "github.com/james-wukong/orders-api/internal/infrastructure/postgres"
 	infraRedis "github.com/james-wukong/orders-api/internal/infrastructure/redis"
 	router "github.com/james-wukong/orders-api/internal/interfaces/http"
 	"github.com/james-wukong/orders-api/internal/interfaces/http/middleware"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +23,7 @@ type App struct {
 	HTTPServer *http.Server
 	Database   *DBWrapper
 	Redis      *redis.Client
+	Log        *zerolog.Logger
 }
 
 type DBWrapper struct {
@@ -33,16 +34,7 @@ type DBPoolWrapper struct {
 	Pool *pgxpool.Pool
 }
 
-// Initialize logger with console output only
-var conLog = logger.New(logger.LogConfig{
-	EnableConsole: true,
-	FilePath:      "logs/app.log",
-	MaxSize:       5,     // Rotate every 5MB
-	MaxBackups:    10,    // Keep last 10 files
-	Compress:      false, // Save disk space
-})
-
-func Bootstrap(ctx context.Context) (*App, error) {
+func Bootstrap(ctx context.Context, log *zerolog.Logger) (*App, error) {
 	cfg := config.InitConfig()
 
 	// Initialize Postgres connection pool
@@ -56,18 +48,19 @@ func Bootstrap(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	// 1. Setup Gin
+	// 1. Setup Gin and middleware
 	r := gin.Default()
+	mw := middleware.NewManager(log, db, redisClient)
 	if cfg.App.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r.Use(
-		middleware.RateLimiterMiddleware(),
-		middleware.CORSMiddleware(),
-		middleware.RecoveryMiddleware(),
-		middleware.SetClientMiddleware(),
+		mw.RateLimiterMiddleware(),
+		mw.CORSMiddleware(),
+		mw.RecoveryMiddleware(),
+		mw.SetClientMiddleware(),
 	)
 	v1 := r.Group("/api/v1")
 
@@ -84,17 +77,18 @@ func Bootstrap(ctx context.Context) (*App, error) {
 		HTTPServer: server,
 		Database:   &DBWrapper{DB: db},
 		Redis:      redisClient,
+		Log:        log,
 	}
 
 	// 2. Init Handlers
-	rHandler := application.initRestaurantRouter(db)
+	rHandler := application.initRestaurantRouter()
+	uHandler := application.initUserRouter()
 
 	// 3. Register everything dynamically
-	routerManager := router.NewRouter(r)
+	routerManager := router.NewRouter(r, mw)
 	routerManager.RegisterModules(v1,
-		// uHandler,
-		// oHandler,
 		rHandler,
+		uHandler,
 	// Adding a new module (e.g. PaymentHandler) is now just one line here!
 	)
 

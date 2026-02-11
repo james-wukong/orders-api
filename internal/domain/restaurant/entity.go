@@ -8,7 +8,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type Restaurant struct {
+// Restaurants represents a restaurant in the system with all its attributes and metadata.
+// It should match the table name in database
+type Restaurants struct {
 	ID                    uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Name                  string    `gorm:"size:255;not null"`
 	Slug                  string    `gorm:"size:255;unique;not null"`
@@ -36,10 +38,10 @@ type Restaurant struct {
 	UpdatedAt             time.Time `gorm:"autoUpdateTime"`
 }
 
-// NewRestaurant is a Factory Function that ensures a Restaurant
+// NewRestaurants is a Factory Function that ensures a Restaurants
 // is always created with a valid ID and default business state.
-func NewRestaurant(name, slug string) *Restaurant {
-	return &Restaurant{
+func NewRestaurants(name, slug string) *Restaurants {
+	return &Restaurants{
 		ID:                    uuid.New(),
 		Name:                  name,
 		Slug:                  slug,

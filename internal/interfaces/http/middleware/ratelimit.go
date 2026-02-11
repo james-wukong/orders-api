@@ -1,13 +1,15 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
 
 var limiters = make(map[string]*rate.Limiter)
 
-func RateLimiterMiddleware() gin.HandlerFunc {
+func (m *Manager) RateLimiterMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := c.ClientIP()
 
@@ -18,7 +20,10 @@ func RateLimiterMiddleware() gin.HandlerFunc {
 
 		if !limiter.Allow() {
 			// utils.ReturnErrorResponse(c, http.StatusTooManyRequests, "Too Many Requests", nil)
-			c.Abort()
+			m.log.Warn().Str("ip", ip).Msg("Rate limit exceeded")
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+				"error": "Too Many Requests",
+			})
 			return
 		}
 		c.Next()
