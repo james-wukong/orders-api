@@ -59,10 +59,8 @@ func (c *CachedRestaurantRepository) GetByID(ctx context.Context, id uuid.UUID) 
 		return nil, err
 	}
 	// 2.2 found in DB, update cache
-	if res != nil {
-		newCtx := context.WithoutCancel(ctx)
-		go c.redisRepo.Update(newCtx, res)
-	}
+	newCtx := context.WithoutCancel(ctx)
+	go c.redisRepo.Update(newCtx, res)
 
 	return res, nil
 }
@@ -87,10 +85,8 @@ func (c *CachedRestaurantRepository) GetBySlug(
 		return nil, err
 	}
 	// 3. found in DB, update cache
-	if res != nil {
-		newCtx := context.WithoutCancel(ctx)
-		go c.redisRepo.Update(newCtx, res)
-	}
+	newCtx := context.WithoutCancel(ctx)
+	go c.redisRepo.Update(newCtx, res)
 
 	return res, nil
 }
