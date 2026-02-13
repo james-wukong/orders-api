@@ -29,6 +29,7 @@ func (h *UserHandler) Register(mw *middleware.Manager, v1 *gin.RouterGroup) {
 	{
 		// userGroup.Use(mw.Authenticate())
 		userGroup.POST("/register", h.Create)
+		userGroup.POST("/login", h.Login)
 		// userGroup.GET("/:id", mw.Authenticate(), h.GetProfile)
 	}
 }
@@ -54,5 +55,18 @@ func (h *UserHandler) Create(c *gin.Context) {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
+	// 1. Map Request DTO to use case input
+	// var req dto.LoginRequest
+	// if err := c.ShouldBindJSON(&req); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+
+	// // 2. Execute Use Case
+	// res, err := h.loginUC.Execute(c.Request.Context(), req)
+	// if err != nil {
+	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
 }

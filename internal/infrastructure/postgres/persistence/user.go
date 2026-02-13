@@ -13,62 +13,82 @@ import (
 )
 
 type userRepository struct {
-	db    *gorm.DB
-	cache user.Cache
-	log   *zerolog.Logger
+	db  *gorm.DB
+	log *zerolog.Logger
 }
 
-func NewUserRepository(db *gorm.DB, cache user.Cache, log *zerolog.Logger) user.Repository {
-	return &userRepository{db: db, cache: cache, log: log}
+func NewUserRepository(db *gorm.DB, log *zerolog.Logger) user.Repository {
+	return &userRepository{db: db, log: log}
 }
 
 // Implement the UserRepository interface methods here, using GORM to interact with the PostgreSQL database.
-func (u *userRepository) Create(ctx context.Context, user *user.Users) error {
-	return u.db.WithContext(ctx).Create(user).Error
+func (r *userRepository) Create(ctx context.Context, user *user.Users) error {
+	// First, create the user in the database
+	err := r.db.WithContext(ctx).Create(user).Error
+	if err != nil {
+		r.log.Error().Err(err).Msg("Error creating user in database")
+		return err
+	}
+	return nil
 }
 
 // Implement GetByID method
-func (u *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*user.Users, error) {
-	var user user.Users
-	err := u.db.WithContext(ctx).First(&user, "id = ?", id).Error
+func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*user.Users, error) {
+	var record user.Users
+	err := r.db.WithContext(ctx).First(&record, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil // Return nil if not found
 		}
 		return nil, err
 	}
-	return &user, nil
+	return &record, nil
 }
 
 // Implement GetByEmail method
-func (u *userRepository) GetByEmail(ctx context.Context, email string) (*user.Users, error) {
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*user.Users, error) {
 	var record user.Users
-	err := u.db.WithContext(ctx).First(&record, "email = ?", email).Error
+	err := r.db.WithContext(ctx).First(&record, "email = ?", email).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Return your own domain error
+			// Return domain error
 			return nil, user.ErrUserNotFound
 		}
 		return nil, err
 	}
+
 	return &record, nil
 }
 
 // Implement Update method
-func (u *userRepository) Update(ctx context.Context, user *user.Users) error {
-	return u.db.WithContext(ctx).Save(user).Error
+func (r *userRepository) Update(ctx context.Context, user *user.Users) error {
+	// Update the user record in the database
+	err := r.db.WithContext(ctx).Save(user).Error
+	if err != nil {
+		r.log.Error().Err(err).Msg("Error updating user in database")
+		return err
+	}
+
+	return nil
 }
 
 // Implement Delete method
-func (u *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return u.db.WithContext(ctx).Delete(&user.Users{}, "id = ?", id).Error
+func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	// Delete the user record from the database
+	err := r.db.WithContext(ctx).Delete(&user.Users{}, "id = ?", id).Error
+	if err != nil {
+		r.log.Error().Err(err).Msg("Error deleting user from database")
+		return err
+	}
+
+	return nil
 }
 
 // Implement List method
-func (u *userRepository) List(ctx context.Context, filter *user.UserFilterEntity) ([]*user.Users, error) {
-	var users []*user.Users
-	query := u.db.WithContext(ctx).Model(&user.Users{})
+func (r *userRepository) List(ctx context.Context, filter *user.UserFilterEntity) ([]user.Users, error) {
+	var users []user.Users
+	query := r.db.WithContext(ctx).Model(&user.Users{})
 	if filter != nil {
 		if filter.Email != nil && *filter.Email != "" {
 			query = query.Where("email = ?", filter.Email)
