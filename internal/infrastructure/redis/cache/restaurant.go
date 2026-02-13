@@ -24,17 +24,14 @@ func NewRestaurantCache(redis *redis.Client, log *zerolog.Logger) *restaurantCac
 // GetByID returns nil if the restaurant is not found in cache, and returns error only if there is an actual error fetching from cache
 func (r *restaurantCache) GetByID(ctx context.Context, id uuid.UUID) (*restaurant.Restaurants, error) {
 	var res restaurant.Restaurants
+	// restaurant info hash key format: "restaurant:id"
 	key := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, id)
 	// HGetALl return nil if the key doesn't exist.
 	err := r.redis.HGetAll(ctx, key).Scan(&res)
 	if err != nil {
-		if err == redis.Nil {
-			return nil, nil // Cache miss, return nil without error
-		}
 		r.log.Error().Err(err).Msg("Error scanning restaurant from cache")
 		return nil, err
-	}
-	if res.ID == uuid.Nil {
+	} else if res.ID == uuid.Nil {
 		return nil, nil // Cache miss, return nil without error
 	}
 	return &res, nil
@@ -44,7 +41,8 @@ func (r *restaurantCache) GetByID(ctx context.Context, id uuid.UUID) (*restauran
 // if this fails, it will return to database to fetch the restaurant data and update the cache
 func (r *restaurantCache) GetBySlug(ctx context.Context, slug string) (*restaurant.Restaurants, error) {
 	var idStr string
-	slugKey := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, slug)
+	// Slug to id map key format: "restaurant:slug_to_id:slug"
+	slugKey := fmt.Sprintf("%s%s%s", restaurant.RedisRestaurantPrefix, restaurant.RedisSlupToIDPrefix, slug)
 	// First, get the restaurant ID from the slug mapping
 	idStr, err := r.redis.Get(ctx, slugKey).Result()
 	if err == redis.Nil {
@@ -63,14 +61,18 @@ func (r *restaurantCache) GetBySlug(ctx context.Context, slug string) (*restaura
 
 }
 
+// Set create a restaurant hash in redis
 func (r *restaurantCache) Set(ctx context.Context, entity *restaurant.Restaurants) error {
-	var jsonData map[string]interface{}
+	var jsonMap map[string]interface{}
+	// restaurant info hash key format: "restaurant:id"
 	key := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, entity.ID)
 
-	inrec, _ := json.Marshal(entity)
-	json.Unmarshal(inrec, &jsonData)
-	r.redis.HSet(ctx, key, jsonData)
-	err := r.redis.HSet(ctx, key, jsonData).Err()
+	// struct to json string for HSet
+	jsonStr, _ := json.Marshal(entity)
+	// Unmarshal back from json string to map[string]interface{}
+	json.Unmarshal(jsonStr, &jsonMap)
+	r.redis.HSet(ctx, key, jsonMap)
+	err := r.redis.HSet(ctx, key, jsonMap).Err()
 	if err != nil {
 		r.log.Error().Err(err).Msg("Error setting restaurant in cache")
 		return err
@@ -83,6 +85,7 @@ func (r *restaurantCache) Set(ctx context.Context, entity *restaurant.Restaurant
 // Delete removes the restaurant data and the slug to id mapping from cache
 func (r *restaurantCache) Delete(ctx context.Context, id uuid.UUID) error {
 	var slug string
+	// restaurant info hash key format: "restaurant:id"
 	key := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, id)
 	// Get the slug
 	err := r.redis.HGet(ctx, key, "slug").Scan(&slug)
@@ -107,19 +110,22 @@ func (r *restaurantCache) Delete(ctx context.Context, id uuid.UUID) error {
 // Update updates the restaurant data in cache and also updates the slug to id mapping
 func (r *restaurantCache) Update(ctx context.Context, entity *restaurant.Restaurants) error {
 	var jsonData map[string]interface{}
+	// restaurant info hash key format: "restaurant:id"
 	idKey := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, entity.ID)
-	slugKey := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, entity.Slug)
+	// Slug to id map key format: "restaurant:slug_to_id:slug"
+	slugKey := fmt.Sprintf("%s%s%s", restaurant.RedisRestaurantPrefix, restaurant.RedisSlupToIDPrefix, entity.Slug)
 
 	pipe := r.redis.Pipeline()
-	// Save the actual data
+	// 1. Save the actual data
 	inrec, _ := json.Marshal(entity)
 	json.Unmarshal(inrec, &jsonData)
 	pipe.HSet(ctx, idKey, jsonData)
 	pipe.Expire(ctx, idKey, 7*24*time.Hour) // Set TTL for the restaurant data
 
-	// Save the slug to id mapping
+	// 2. Save the slug to id mapping
 	pipe.Set(ctx, slugKey, entity.ID.String(), 7*24*time.Hour) // Set TTL for the slug mapping
 
+	// 3. Execute the pipeline
 	if _, err := pipe.Exec(ctx); err != nil {
 		r.log.Error().Err(err).Msg("Error updating restaurant in cache")
 		return err
@@ -129,7 +135,8 @@ func (r *restaurantCache) Update(ctx context.Context, entity *restaurant.Restaur
 }
 
 func (r *restaurantCache) MapSlugToID(ctx context.Context, id uuid.UUID, slug string) error {
-	key := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, slug)
+	// Slug to id map key format: "restaurant:slug_to_id:slug"
+	key := fmt.Sprintf("%s%s%s", restaurant.RedisRestaurantPrefix, restaurant.RedisSlupToIDPrefix, slug)
 	err := r.redis.Set(ctx, key, id.String(), 7*24*time.Hour).Err()
 	if err != nil {
 		r.log.Error().Err(err).Msg("Error mapping slug to ID in cache")
@@ -139,7 +146,8 @@ func (r *restaurantCache) MapSlugToID(ctx context.Context, id uuid.UUID, slug st
 }
 
 func (r *restaurantCache) DeleteSlugToID(ctx context.Context, slug string) error {
-	key := fmt.Sprintf("%s%s", restaurant.RedisRestaurantPrefix, slug)
+	// Slug to id map key format: "restaurant:slug_to_id:slug"
+	key := fmt.Sprintf("%s%s%s", restaurant.RedisRestaurantPrefix, restaurant.RedisSlupToIDPrefix, slug)
 	err := r.redis.Del(ctx, key).Err()
 	if err != nil {
 		r.log.Error().Err(err).Msg("Error deleting slug to ID mapping from cache")

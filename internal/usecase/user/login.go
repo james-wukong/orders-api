@@ -6,33 +6,41 @@ import (
 	"github.com/james-wukong/orders-api/internal/domain/user"
 	uSession "github.com/james-wukong/orders-api/internal/domain/user_session"
 	"github.com/james-wukong/orders-api/internal/interfaces/http/dto"
-	"github.com/redis/go-redis/v9"
 )
 
 type LoginUseCase struct {
 	uRepo  user.Repository
 	sRepo  uSession.Repository
 	hasher user.PasswordHasher
-	redis  *redis.Client
 }
 
 func NewLoginUseCase(
 	uRepo user.Repository,
 	sRepo uSession.Repository,
 	hasher user.PasswordHasher,
-	redis *redis.Client,
 ) *LoginUseCase {
-	return &LoginUseCase{uRepo: uRepo, sRepo: sRepo, hasher: hasher, redis: redis}
+	return &LoginUseCase{uRepo: uRepo, sRepo: sRepo, hasher: hasher}
 }
 
-func (uc *LoginUseCase) Execute(ctx context.Context, req *dto.LoginRequest) (*dto.LoginResponse, error) {
-	// // 1. Retrieve user by email from the redis cache
+func (uc *LoginUseCase) Execute(ctx context.Context, req *dto.LoginRequest,
+) (*dto.LoginResponse, error) {
+	// Fetch the user (including hash) from Postgres.
+
+	// Compare the password using bcrypt.CompareHashAndPassword.
+
+	// If successful, generate a random token.
+
+	// Store the UserSession (without the hash) in Redis.
+
+	// Return the token to the user.
+
+	// // 1. Retrieve user by email
 	// u, err := uc.uRepo.GetByEmail(ctx, req.Email)
-	// if err != nil {
-	// 	return nil, err
+	// if err != nil || u == nil {
+	// 	return nil, user.ErrInvalidCredentials
 	// }
-	// // 2. Retrieve user session by user ID from the database
-	// session, err := uc.sRepo.GetByID(ctx, u.ID)
+	// // 2. Retrieve user session by user ID
+	// // session, err := uc.sRepo.GetByUserID(ctx, u.ID)
 
 	// // 2. Verify password
 	// if !uc.hasher.Compare(u.PasswordHash, req.Password) {

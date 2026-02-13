@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	TokenLength  = 32
-	ExpireLength = 48 * time.Hour
+	TokenLength = 32
+	TokenTTL    = 2 * 24 * time.Hour
 )
 
 // UserSessions represents the user_sessions table in the database
@@ -42,6 +42,6 @@ func NewUserSession(userID uuid.UUID, deviceInfo string, ipAddress string, opera
 		OperatingSystem: operatingSystem,
 		ClientDevice:    clientDevice,
 		UseAgent:        userAgent,
-		ExpiresAt:       time.Now().Add(ExpireLength),
+		ExpiresAt:       time.Now().Add(TokenTTL),
 	}
 }
