@@ -2,15 +2,19 @@ package restaurant
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const (
 	RedisRestaurantPrefix = "restaurant:"
+	RedisSlupToIDPrefix   = "slug_to_id:"
+
+	RedisUserTTL = 2 * 24 * time.Hour
 )
 
-type Cache interface {
+type RedisCache interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*Restaurants, error)
 	GetBySlug(ctx context.Context, slug string) (*Restaurants, error)
 	Set(ctx context.Context, entity *Restaurants) error

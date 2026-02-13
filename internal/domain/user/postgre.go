@@ -24,5 +24,5 @@ type Repository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 
 	// List retrieves all users from the repository. It returns a slice of users or an error if the operation fails.
-	List(ctx context.Context, filter *UserFilterEntity) ([]*Users, error)
+	List(ctx context.Context, filter *UserFilterEntity) ([]Users, error)
 }
