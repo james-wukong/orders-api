@@ -42,7 +42,7 @@ func (c *CachedUserRepository) Create(ctx context.Context, entity *user.Users) e
 	return nil
 }
 
-// Implement GetByID method
+// GetByID tries to retrieve User info from redis, then database
 func (c *CachedUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*user.Users, error) {
 	// 1. Try the cache first (if implemented)
 	record, err := c.redisRepo.GetByID(ctx, id)
@@ -66,7 +66,7 @@ func (c *CachedUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*user
 	return record, nil
 }
 
-// Implement GetByEmail method
+// GetByEmail tries to retrieve User info from redis, then database
 func (c *CachedUserRepository) GetByEmail(ctx context.Context, email string) (*user.Users, error) {
 	// 1. Try the cache first (if implemented)
 	record, err := c.redisRepo.GetByEmail(ctx, email)
@@ -82,14 +82,13 @@ func (c *CachedUserRepository) GetByEmail(ctx context.Context, email string) (*u
 		return nil, err
 	}
 	// 2.2 found in DB, update cache
-	if record != nil {
-		newCtx := context.WithoutCancel(ctx)
-		go c.redisRepo.Set(newCtx, record)
-	}
+	newCtx := context.WithoutCancel(ctx)
+	go c.redisRepo.Set(newCtx, record)
+
 	return record, nil
 }
 
-// Implement Update method
+// Update updates user info in both database and redis
 func (c *CachedUserRepository) Update(ctx context.Context, entity *user.Users) error {
 	// Update the user record in the database
 	err := c.repo.Update(ctx, entity)
@@ -105,7 +104,8 @@ func (c *CachedUserRepository) Update(ctx context.Context, entity *user.Users) e
 	return nil
 }
 
-// Implement Delete method
+// Delete remove user info from both database and redis
+// including email->userID mapping in redis
 func (c *CachedUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	var email string
 	// 1. get the user by ID to retrieve the email for cache deletion
