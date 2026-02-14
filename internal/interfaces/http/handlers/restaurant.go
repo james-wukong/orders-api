@@ -34,6 +34,18 @@ func (h *RestaurantHandler) Register(mw *middleware.Manager, v1 *gin.RouterGroup
 	}
 }
 
+// Create godoc
+//
+//	@Summary		Create
+//	@Description	create a restaurant
+//	@Tags			create restaurant
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.CreateRestaurantRequest	true	"User Credentials"
+//	@Success		201		{object}	dto.RestaurantResponse
+//	@Failure		400		{object}	map[string]any	"{'error':'error message'}"
+//	@Failure		500		{object}	map[string]any	"{'error':'error message'}"
+//	@Router			/restaurant/create [post]
 func (h *RestaurantHandler) Create(c *gin.Context) {
 	var req dto.CreateRestaurantRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

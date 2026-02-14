@@ -1,66 +1,43 @@
 package middleware
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/james-wukong/orders-api/internal/infrastructure/security"
 )
 
-func (m *Manager) JWTAuthMiddleware() gin.HandlerFunc {
+func (m *Manager) JWTAuthMiddleware(jwtManager *security.JWTManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
-			// utils.ReturnErrorResponse(c, http.StatusUnauthorized, "Token Error", "Token Required")
-			c.Abort()
+		// 1. Get the Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header is required"})
 			return
 		}
 
-		// Check Bearer scheme, tokenString := parts[1]
-		parts := strings.Split(tokenString, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			// utils.ReturnErrorResponse(c, http.StatusUnauthorized, "Token Error", "Invalid authorization format")
-			c.Abort()
+		// 2. Check for the "Bearer " prefix
+		fields := strings.Fields(authHeader)
+		if len(fields) < 2 || strings.ToLower(fields[0]) != "bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
 			return
 		}
-		// actualToken := parts[1]
 
-		// Parse and validate token
-		// claims, err := pkg.ParseToken(actualToken, &pkg.JWTAccessClaims{})
-		// if err != nil {
-		// 	utils.ReturnErrorResponse(c, http.StatusUnauthorized, "Token Error", "Invalid token claims")
-		// 	c.Abort()
-		// 	return
-		// }
+		// 3. Verify the token
+		tokenString := fields[1]
+		claims, err := jwtManager.VerifyToken(tokenString)
+		if err != nil {
+			// You can differentiate between "expired" and "invalid" if needed
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
 
-		// validate token
-		// if err = pkg.ValidateClaim(claims); err != nil {
-		// 	utils.ReturnErrorResponse(c, http.StatusUnauthorized, "Token Error", "Invalid token claims")
-		// 	c.Abort()
-		// 	return
-		// }
+		// 4. Set the UserID in the context for downstream handlers
+		// This allows handlers to do: c.GetString("user_id")
+		c.Set("user_id", claims.UserID)
 
-		// Set user information in context
-		// if ac, ok := claims.(*pkg.JWTAccessClaims); ok {
-		// c.Set(constant.CtxUserID, ac.UserID)
-		// c.Set(constant.CtxUserEmail, ac.Email)
-		// c.Set(constant.CtxUsername, ac.Username)
-		// c.Set(constant.CtxJWTAccessToken, actualToken)
-		// decline if can't find they key in redis (expired or logout)
-		// var clientInfo string
-		// clientInfoTmp, exists := c.Get(constant.CtxDeviceInfo)
-		// clientInfo, ok := clientInfoTmp.(string)
-		// if !exists || !ok {
-		// 	clientInfo = utils.RedisJWTTokenKey(constant.UnknownIpStr, constant.UnknownStr)
-		// }
-		// query := redisCache.NewRedisQuerier(q)
-		// if _, err := query.GetUserToken(c.Request.Context(), utils.RedisJWTTokenKey(clientInfo, ac.UserID)); err != nil {
-		// 	q.Log.Warn().Msgf("can't find user: %v, with client info: %v", ac.UserID, clientInfo)
-		// 	utils.ReturnErrorResponse(c, http.StatusUnauthorized, "Token Error", "Token not found")
-		// 	c.Abort()
-		// 	return
-		// }
-		// }
-
+		// 5. Continue to the next handler
 		c.Next()
 	}
 }

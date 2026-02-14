@@ -18,12 +18,15 @@ import (
 	_ "github.com/james-wukong/orders-api/docs"
 )
 
-// @title Your API Title
-// @version 1.0
-// @description A description for your API
-// @host localhost:8082
-// @BasePath /api/v1
-// @schemes http
+//	@title						Your API Title
+//	@version					1.0
+//	@description				A description for your API
+//	@host						localhost:8082
+//	@BasePath					/api/v1
+//	@schemes					http
+//	@externalDocs.description	OpenAPI
+//	@externalDocs.url			https://swagger.io/resources/open-api/
+//
 // cmd: swag init --parseDependency --parseInternal -d cmd/api,internal/interfaces/http/handlers
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
