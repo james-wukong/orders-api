@@ -38,7 +38,18 @@ func (h *UserHandler) Register(mw *middleware.Manager, v1 *gin.RouterGroup) {
 	}
 }
 
-// Create handles user registration requests
+// Create godoc
+//
+//	@Summary		Create
+//	@Description	register a user
+//	@Tags			register users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.CreateUserRequest	true	"User Credentials"
+//	@Success		201		{object}	dto.UserResponse
+//	@Failure		400		{object}	map[string]any	"{'error':'error message'}"
+//	@Failure		500		{object}	map[string]any	"{'error':'error message'}"
+//	@Router			/user/register [post]
 func (h *UserHandler) Create(c *gin.Context) {
 	// 1. Map Request DTO to use case input
 	var req dto.CreateUserRequest
@@ -59,12 +70,17 @@ func (h *UserHandler) Create(c *gin.Context) {
 }
 
 // Login godoc
-// @Summary Login
-// @Description login a user
-// @Tags users login
-// @Produce json
-// @Success 200 {object} dto.LoginResponse
-// @Router /user/login [post]
+//
+//	@Summary		Login
+//	@Description	login a user
+//	@Tags			login
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.LoginRequest	true	"User Credentials"
+//	@Success		200		{object}	dto.LoginResponse
+//	@Failure		400		{object}	map[string]any	"{'error':'error message'}"
+//	@Failure		401		{object}	map[string]any	"{'error':'error message'}"
+//	@Router			/user/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 

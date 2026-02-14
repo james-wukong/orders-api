@@ -1,11 +1,127 @@
 basePath: /api/v1
 definitions:
+  dto.CreateRestaurantRequest:
+    properties:
+      address:
+        type: string
+      banner_url:
+        type: string
+      city:
+        type: string
+      closing_time:
+        type: string
+      country:
+        type: string
+      delivery_fee:
+        type: number
+      description:
+        type: string
+      email:
+        type: string
+      estimated_delivery_time:
+        type: integer
+      latitude:
+        type: number
+      logo_url:
+        type: string
+      longitude:
+        type: number
+      minimum_order:
+        type: number
+      name:
+        minLength: 3
+        type: string
+      opening_time:
+        description: |-
+          We use pointers for fields with DB defaults so we don't
+          accidentally overwrite the default with a zero-value.
+        type: string
+      phone:
+        type: string
+      postal_code:
+        type: string
+      slug:
+        type: string
+      state:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+      role:
+        enum:
+        - customer
+        - admin
+        - kitchen
+        - delivery
+        - inventory_manager
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   dto.LoginResponse:
     properties:
       session_info:
         $ref: '#/definitions/dto.SessionInfo'
       token:
         type: string
+    type: object
+  dto.RestaurantResponse:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      closing_time:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_open:
+        type: boolean
+      name:
+        type: string
+      opening_time:
+        type: string
+      phone:
+        type: string
+      rating:
+        type: number
+      slug:
+        type: string
+      state:
+        type: string
+      total_reviews:
+        type: integer
     type: object
   dto.SessionInfo:
     properties:
@@ -22,6 +138,34 @@ definitions:
       user_id:
         type: string
     type: object
+  dto.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      first_name:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_login:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
 host: localhost:8082
 info:
   contact: {}
@@ -29,9 +173,50 @@ info:
   title: Your API Title
   version: "1.0"
 paths:
+  /restaurant/create:
+    post:
+      consumes:
+      - application/json
+      description: create a restaurant
+      parameters:
+      - description: User Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRestaurantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.RestaurantResponse'
+        "400":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create
+      tags:
+      - create restaurant
   /user/login:
     post:
+      consumes:
+      - application/json
       description: login a user
+      parameters:
+      - description: User Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -39,9 +224,51 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
       summary: Login
       tags:
-      - users login
+      - login
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: register a user
+      parameters:
+      - description: User Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create
+      tags:
+      - register users
 schemes:
 - http
 swagger: "2.0"
