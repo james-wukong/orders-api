@@ -61,6 +61,23 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*user.Us
 	return &record, nil
 }
 
+func (r *userRepository) LoginByEmail(ctx context.Context, email string) (*user.UserLogin, error) {
+	var record user.UserLogin
+	err := r.db.WithContext(ctx).First(&record, "email = ?", email).Error
+	r.log.Info().Msgf(" finding user: in database %v", record)
+
+	if err != nil {
+		r.log.Error().Err(err).Msg("Error finding user: in database")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Return domain error
+			return nil, user.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return &record, nil
+}
+
 // Implement Update method
 func (r *userRepository) Update(ctx context.Context, user *user.Users) error {
 	// Update the user record in the database

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/james-wukong/orders-api/internal/pkg/utils"
 )
 
 const (
@@ -22,7 +21,7 @@ type UserSessions struct {
 	IPAddress       string    `gorm:"type:varchar(45)"`
 	OperatingSystem string    `gorm:"type:varchar(100)"`
 	ClientDevice    string    `gorm:"type:varchar(100)"`
-	UseAgent        string    `gorm:"type:varchar(100)"`
+	UserAgent       string    `gorm:"type:varchar(100)"`
 	ExpiresAt       time.Time `gorm:"not null"`
 	CreatedAt       time.Time `gorm:"default:current_timestamp"`
 }
@@ -32,16 +31,25 @@ type UserSessions struct {
 // 	return "user_sessions"
 // }
 
-func NewUserSession(userID uuid.UUID, deviceInfo string, ipAddress string, operatingSystem string, clientDevice string, userAgent string, expiresAt time.Time) *UserSessions {
-	token, _ := utils.GenerateRandomToken(TokenLength) // Generate a random token for the session
+func NewUserSession(
+	userID uuid.UUID,
+	token string,
+	deviceInfo string,
+	ipAddress string,
+	operatingSystem string,
+	clientDevice string,
+	userAgent string,
+) *UserSessions {
+	// token, _ := utils.GenerateRandomToken(TokenLength) // Generate a random token for the session
 	return &UserSessions{
+		ID:              uuid.New(),
 		UserID:          userID,
 		Token:           token,
 		DeviceInfo:      deviceInfo,
 		IPAddress:       ipAddress,
 		OperatingSystem: operatingSystem,
 		ClientDevice:    clientDevice,
-		UseAgent:        userAgent,
+		UserAgent:       userAgent,
 		ExpiresAt:       time.Now().Add(TokenTTL),
 	}
 }

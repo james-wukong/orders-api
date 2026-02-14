@@ -37,7 +37,10 @@ func (c *CachedUserSessionRepository) Create(
 		c.log.Error().Err(err).Msg("Error creating user session in database")
 		return err
 	}
-	// 2. If successful, also set the user session in redis
+	// 2. If successful, search redis and database for the previous active session
+	//
+	//
+	// also set the user session in redis
 	newCtx := context.WithoutCancel(ctx)
 	go c.redisRepo.Set(newCtx, entity)
 

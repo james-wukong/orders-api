@@ -16,6 +16,7 @@ type Repository interface {
 
 	// GetByEmail retrieves a user by their email address. It returns the user or an error if the user is not found.
 	GetByEmail(ctx context.Context, email string) (*Users, error)
+	LoginByEmail(ctx context.Context, email string) (*UserLogin, error)
 
 	// Update updates an existing user's information in the repository. It returns the updated user or an error if the operation fails.
 	Update(ctx context.Context, user *Users) error

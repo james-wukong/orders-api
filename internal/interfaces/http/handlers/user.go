@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/james-wukong/orders-api/internal/interfaces/http/dto"
 	"github.com/james-wukong/orders-api/internal/interfaces/http/middleware"
+	"github.com/james-wukong/orders-api/internal/pkg/utils"
 	userUC "github.com/james-wukong/orders-api/internal/usecase/user"
 )
 
@@ -17,9 +19,11 @@ type UserHandler struct {
 
 func NewUserHandler(
 	c *userUC.CreateUserUseCase,
+	l *userUC.LoginUseCase,
 ) *UserHandler {
 	return &UserHandler{
 		createUserUC: c,
+		loginUC:      l,
 	}
 }
 
@@ -55,18 +59,41 @@ func (h *UserHandler) Create(c *gin.Context) {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-	// 1. Map Request DTO to use case input
-	// var req dto.LoginRequest
-	// if err := c.ShouldBindJSON(&req); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	var req dto.LoginRequest
 
-	// // 2. Execute Use Case
-	// res, err := h.loginUC.Execute(c.Request.Context(), req)
-	// if err != nil {
-	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	// 1. Map request to DTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// get device info from request
+	extractor := utils.NewMetadataExtractor()
+	metadata := extractor.GetMetadata(c)
+	mJSONBytes, err := json.Marshal(metadata.Location)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Login user and get token
+	resp, err := h.loginUC.Execute(c.Request.Context(),
+		&req,
+		metadata.IP, metadata.OS,
+		metadata.Device, metadata.UserAgent,
+		string(mJSONBytes),
+	)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid credentials",
+		})
+		return
+	}
+	// Map to response
+	c.JSON(http.StatusOK, dto.MapToLoginResponse(resp))
 
 }

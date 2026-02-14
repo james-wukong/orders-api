@@ -88,6 +88,21 @@ func (c *CachedUserRepository) GetByEmail(ctx context.Context, email string) (*u
 	return record, nil
 }
 
+// LoginByEmail tries to find a match user in database with email address
+func (c *CachedUserRepository) LoginByEmail(
+	ctx context.Context,
+	email string,
+) (*user.UserLogin, error) {
+	// find it in database only
+	record, err := c.repo.LoginByEmail(ctx, email)
+	if err != nil || record == nil {
+		c.log.Error().Err(err).Msg("Error fetching restaurant from database")
+		return nil, err
+	}
+
+	return record, nil
+}
+
 // Update updates user info in both database and redis
 func (c *CachedUserRepository) Update(ctx context.Context, entity *user.Users) error {
 	// Update the user record in the database
