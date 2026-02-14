@@ -1,0 +1,72 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "A description for your API",
+        "title": "Your API Title",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8082",
+    "basePath": "/api/v1",
+    "paths": {
+        "/user/login": {
+            "post": {
+                "description": "login a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users login"
+                ],
+                "summary": "Login",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "session_info": {
+                    "$ref": "#/definitions/dto.SessionInfo"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SessionInfo": {
+            "type": "object",
+            "properties": {
+                "client_device": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "operating_system": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

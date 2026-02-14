@@ -13,8 +13,18 @@ import (
 	"github.com/james-wukong/orders-api/internal/app"
 	"github.com/james-wukong/orders-api/internal/config"
 	"github.com/james-wukong/orders-api/internal/infrastructure/logger"
+
+	// Import the generated docs package (the path may vary based on your project structure)
+	_ "github.com/james-wukong/orders-api/docs"
 )
 
+// @title Your API Title
+// @version 1.0
+// @description A description for your API
+// @host localhost:8082
+// @BasePath /api/v1
+// @schemes http
+// cmd: swag init --parseDependency --parseInternal -d cmd/api,internal/interfaces/http/handlers
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

@@ -58,6 +58,13 @@ func (h *UserHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.MapToUserResponse(res))
 }
 
+// Login godoc
+// @Summary Login
+// @Description login a user
+// @Tags users login
+// @Produce json
+// @Success 200 {object} dto.LoginResponse
+// @Router /user/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 

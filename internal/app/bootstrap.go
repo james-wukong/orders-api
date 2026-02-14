@@ -17,6 +17,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type App struct {
@@ -65,6 +68,7 @@ func Bootstrap(ctx context.Context, log *zerolog.Logger) (*App, error) {
 		mw.SetClientMiddleware(),
 	)
 	v1 := r.Group("/api/v1")
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// setup http server
 	server := &http.Server{
