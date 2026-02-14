@@ -1,0 +1,47 @@
+basePath: /api/v1
+definitions:
+  dto.LoginResponse:
+    properties:
+      session_info:
+        $ref: '#/definitions/dto.SessionInfo'
+      token:
+        type: string
+    type: object
+  dto.SessionInfo:
+    properties:
+      client_device:
+        type: string
+      expires_at:
+        type: string
+      ip_address:
+        type: string
+      operating_system:
+        type: string
+      user_agent:
+        type: string
+      user_id:
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact: {}
+  description: A description for your API
+  title: Your API Title
+  version: "1.0"
+paths:
+  /user/login:
+    post:
+      description: login a user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+      summary: Login
+      tags:
+      - users login
+schemes:
+- http
+swagger: "2.0"
