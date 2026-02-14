@@ -33,7 +33,7 @@ type RequestMetadata struct {
 	Location  map[string]string
 }
 
-func (e *MetadataExtractor) GetMetadata(c *gin.Context) RequestMetadata {
+func (e *MetadataExtractor) GetMetadata(c *gin.Context) *RequestMetadata {
 	uaString := c.GetHeader("User-Agent")
 	client := e.parser.Parse(uaString)
 
@@ -55,7 +55,7 @@ func (e *MetadataExtractor) GetMetadata(c *gin.Context) RequestMetadata {
 		loc = nil
 	}
 
-	return RequestMetadata{
+	return &RequestMetadata{
 		IP:        ip,
 		OS:        strings.TrimSpace(os),
 		Device:    device,

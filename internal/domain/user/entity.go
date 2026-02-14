@@ -36,6 +36,16 @@ type Users struct {
 	UpdatedAt              time.Time  `gorm:"autoUpdateTime"`
 }
 
+type UserLogin struct {
+	ID           uuid.UUID
+	Email        string
+	PasswordHash string // Hashed
+}
+
+func (UserLogin) TableName() string {
+	return "users"
+}
+
 type UserFilterEntity struct {
 	Email     *string
 	Roles     []Role

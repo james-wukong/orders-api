@@ -39,10 +39,11 @@ newrelic:
 
 # jwt config section
 jwt:
-  secret: "825fdc1979a1c6f236e41b847d077abb7de05717deae93745c47eb30ee0b4e832e9af07f99eab455693ca64ae87a9be42bdb979d1abda3bbb1d7b17920910ff4"
-  expires: 7
+  secret: "vXZC8UA/fTnpf8+8gIN+OFrINxFC77144IRhSz/YQ4I="
+  # hours
+  expires: 48
+  refresh: 168
   issuer: "james.com"
-  refresh: 14
 
 #otp config section
 otp:

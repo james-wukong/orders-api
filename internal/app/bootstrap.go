@@ -24,6 +24,8 @@ type App struct {
 	Database   *DBWrapper
 	Redis      *redis.Client
 	Log        *zerolog.Logger
+	AppConfig  *config.AppConfig
+	JWTConfig  *config.JWTConfig
 }
 
 type DBWrapper struct {
@@ -78,6 +80,8 @@ func Bootstrap(ctx context.Context, log *zerolog.Logger) (*App, error) {
 		Database:   &DBWrapper{DB: db},
 		Redis:      redisClient,
 		Log:        log,
+		AppConfig:  &cfg.App,
+		JWTConfig:  &cfg.JWT,
 	}
 
 	// 2. Init Handlers

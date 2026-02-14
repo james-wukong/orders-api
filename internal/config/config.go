@@ -11,7 +11,7 @@ type Config struct {
 	Database DatabaseConfig `mapstructure:"databases"`
 	Caches   CacheConfig    `mapstructure:"caches"`
 	NewRelic NewRelicConfig `mapstructure:"newrelic"`
-	JWT      JwtConfig      `mapstructure:"jwt"`
+	JWT      JWTConfig      `mapstructure:"jwt"`
 	OTP      OtpConfig      `mapstructure:"otp"`
 }
 
@@ -59,7 +59,7 @@ type NewRelicConfig struct {
 	License string `mapstructure:"license"`
 }
 
-type JwtConfig struct {
+type JWTConfig struct {
 	Secret  string `mapstructure:"secret"`
 	Expires int    `mapstructure:"expires"`
 	Issuer  string `mapstructure:"issuer"`

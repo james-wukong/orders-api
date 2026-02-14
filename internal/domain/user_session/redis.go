@@ -10,7 +10,7 @@ import (
 const (
 	RedisUserPrefix    = "user:"
 	RedisSessionPrefix = "session:"
-	RedisTokenPrefix   = "session:"
+	RedisTokenPrefix   = "token:"
 	RedisSessionTTL    = 2 * 24 * time.Hour
 )
 

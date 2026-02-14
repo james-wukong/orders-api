@@ -3,6 +3,8 @@
 package app
 
 import (
+	"time"
+
 	infraPostgres "github.com/james-wukong/orders-api/internal/infrastructure/postgres/persistence"
 	infraRedis "github.com/james-wukong/orders-api/internal/infrastructure/redis/cache"
 	infraCache "github.com/james-wukong/orders-api/internal/infrastructure/repository"
@@ -30,16 +32,23 @@ func (a *App) initRestaurantRouter() *handlers.RestaurantHandler {
 
 func (a *App) initUserRouter() *handlers.UserHandler {
 	// 1. Repository Layer: Infrastructure implementation of Domain interfaces ---
-	redisRepo := infraRedis.NewUserCache(a.Redis, a.Log)
-	repo := infraPostgres.NewUserRepository(a.Database.DB, a.Log)
-	cachedRepo := infraCache.NewCachedUserRepository(repo, redisRepo, a.Log)
+	userRedisRepo := infraRedis.NewUserCache(a.Redis, a.Log)
+	sessRedisRepo := infraRedis.NewUserSessionCache(a.Redis, a.Log)
+	userRepo := infraPostgres.NewUserRepository(a.Database.DB, a.Log)
+	sessRepo := infraPostgres.NewUserSessionRepository(a.Database.DB, a.Log)
+	cachedUserRepo := infraCache.NewCachedUserRepository(userRepo, userRedisRepo, a.Log)
+	cachedSessionRepo := infraCache.NewCachedUserSessionRepository(sessRepo, sessRedisRepo, a.Log)
 
 	// 2. Service Layer: Domain Services ---
 	hasher := security.NewBcryptHasher(security.DefaultBcryptCost)
+	token := security.NewJWTManager(a.JWTConfig.Secret,
+		time.Duration(a.JWTConfig.Expires)*time.Hour,
+	)
 
 	// 3. UseCase Layer: Business Logic ---
-	createUC := userUC.NewCreateUserUseCase(cachedRepo, hasher)
+	createUC := userUC.NewCreateUserUseCase(cachedUserRepo, hasher)
+	loginUC := userUC.NewLoginUseCase(cachedUserRepo, cachedSessionRepo, hasher, token)
 
 	// 4. Handler Layer: HTTP Handlers ---
-	return handlers.NewUserHandler(createUC)
+	return handlers.NewUserHandler(createUC, loginUC)
 }
