@@ -13,14 +13,18 @@ func (m *Manager) JWTAuthMiddleware(jwtManager *security.JWTManager) gin.Handler
 		// 1. Get the Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header is required"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "authorization header is required",
+			})
 			return
 		}
 
 		// 2. Check for the "Bearer " prefix
 		fields := strings.Fields(authHeader)
 		if len(fields) < 2 || strings.ToLower(fields[0]) != "bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid authorization header format",
+			})
 			return
 		}
 
