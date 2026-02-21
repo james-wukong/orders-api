@@ -11,6 +11,6 @@ USING (estimated_delivery_time * INTERVAL '1 minute');
 
 -- 3. Set a new interval-compatible default (e.g., '0 minutes')
 ALTER TABLE restaurants
-ALTER COLUMN estimated_delivery_time SET DEFAULT INTERVAL '0 minutes';
+ALTER COLUMN estimated_delivery_time SET DEFAULT INTERVAL '10 minutes';
 
 COMMIT;
